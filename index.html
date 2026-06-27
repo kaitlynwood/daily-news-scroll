@@ -172,72 +172,66 @@
     <div class="loading">Loading today’s news...</div>
   </div>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwYUbM8-uF1ZeZErUmLhnn86AGL6QiedFldvgrNE3YGc8tV_bXlI2P_veYeXPIQchzX7A/exec";
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbwYUbM8-uF1ZeZErUmLhnn86AGL6QiedFldvgrNE3YGc8tV_bXlI2P_veYeXPIQchzX7A/exec";
 
-    const colors = [
-      "#FFE3E3",
-      "#FFEACC",
-      "#FFF7C9",
-      "#E6F8D8",
-      "#DDF3FF",
-      "#E8E2FF",
-      "#F7DDF7"
-    ];
+  const colors = [
+    "#FFE3E3",
+    "#FFEACC",
+    "#FFF7C9",
+    "#E6F8D8",
+    "#DDF3FF",
+    "#E8E2FF",
+    "#F7DDF7"
+  ];
 
-    fetch(API_URL)
-      .then(response => response.json())
-      .then(cards => renderCards(cards))
-      .catch(error => {
-        document.getElementById("cards").innerHTML =
-          `<div class="error">Could not load news. Check your Apps Script URL.</div>`;
-      });
+  fetch(API_URL)
+    .then(response => response.json())
+    .then(cards => renderCards(cards))
+    .catch(error => {
+      document.getElementById("cards").innerHTML =
+        `<div class="error">Could not load news. Check your Apps Script URL.</div>`;
+    });
 
-    function renderCards(cards) {
-      const container = document.getElementById("cards");
+  function renderCards(cards) {
+    const container = document.getElementById("cards");
 
-      if (!cards || !cards.length) {
-        container.innerHTML = `<div class="error">No news stories found.</div>`;
-        return;
-      }
+    if (!cards || !cards.length) {
+      container.innerHTML = `<div class="error">No news stories found.</div>`;
+      return;
+    }
 
-      const today = new Date();
+    const today = new Date();
 
-const updated = today.toLocaleTimeString([], {
-  hour: "numeric",
-  minute: "2-digit"
-});
+    const updated = today.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
 
-const date = today.toLocaleDateString([], {
-  weekday: "long",
-  month: "long",
-  day: "numeric",
-  year: "numeric"
-});
+    const date = today.toLocaleDateString([], {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
 
-container.innerHTML =
-`
-<section class="cover">
-
-<h2>☀️ Good Morning</h2>
-
-<h1>Daily 7 News</h1>
-
-<div class="date">${date}</div>
-
-<div class="swipe">
-↓<br>
-Swipe to begin
-</div>
-
-<div class="updated">
-Updated ${updated}
-</div>
-
-</section>
-`
-+
-cards.map((card, index) => ``
+    container.innerHTML =
+      `
+      <section class="cover">
+        <h2>☀️ Good Morning</h2>
+        <h1>Daily 7 News</h1>
+        <div class="date">${date}</div>
+        <div class="swipe">
+          ↓<br>
+          Swipe to begin
+        </div>
+        <div class="updated">
+          Updated ${updated}
+        </div>
+      </section>
+      `
+      +
+      cards.map((card, index) => `
         <section class="card" style="background:${colors[index % colors.length]}">
           <div class="number">${index + 1} of ${cards.length}</div>
           <div class="headline">${escapeHtml(card.headline)}</div>
@@ -247,41 +241,41 @@ cards.map((card, index) => ``
         </section>
       `).join("");
 
-      animateCards();
-    }
+    animateCards();
+  }
 
-    function animateCards() {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("active");
-          } else {
-            entry.target.classList.remove("active");
-          }
-        });
-      }, { threshold: 0.6 });
-
-      document.querySelectorAll(".card").forEach(card => {
-        observer.observe(card);
+  function animateCards() {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("active");
+        } else {
+          entry.target.classList.remove("active");
+        }
       });
-    }
+    }, { threshold: 0.6 });
 
-    function escapeHtml(text) {
-      return String(text || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    document.querySelectorAll(".card").forEach(card => {
+      observer.observe(card);
+    });
+  }
 
-    function escapeAttribute(text) {
-      return String(text || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("<", "%3C")
-        .replaceAll(">", "%3E");
-    }
-  </script>
+  function escapeHtml(text) {
+    return String(text || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttribute(text) {
+    return String(text || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "%3C")
+      .replaceAll(">", "%3E");
+  }
+</script>
 </body>
 </html>
