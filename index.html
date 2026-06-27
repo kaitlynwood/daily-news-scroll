@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Daily News Scroll</title>
+  <title>Daily 7 News</title>
 
   <style>
     body {
@@ -18,6 +18,54 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       scroll-behavior: smooth;
+    }
+
+    .cover {
+      height: 100vh;
+      background: #FFF8EC;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 36px;
+      box-sizing: border-box;
+    }
+
+    .cover h2 {
+      font-size: 30px;
+      color: #666;
+      margin: 0 0 18px;
+      font-weight: 500;
+    }
+
+    .cover h1 {
+      font-size: 58px;
+      margin: 0 0 36px;
+      color: #222;
+      line-height: 1.05;
+    }
+
+    .date {
+      font-size: 28px;
+      color: #666;
+      margin-bottom: 60px;
+    }
+
+    .swipe {
+      font-size: 24px;
+      color: #888;
+      margin-bottom: 50px;
+      animation: bounce 1.8s infinite;
+    }
+
+    .updated {
+      font-size: 18px;
+      color: #666;
+      background: rgba(255,255,255,.8);
+      padding: 12px 24px;
+      border-radius: 999px;
     }
 
     .card {
@@ -97,6 +145,11 @@
       background: #FFE3E3;
     }
 
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+
     @media (min-width: 700px) {
       .headline {
         font-size: 46px;
@@ -106,64 +159,6 @@
         height: 320px;
       }
     }
-    .cover {
-  height: 100vh;
-  background: #FFF8EC;
-  scroll-snap-align: start;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-  padding: 36px;
-  box-sizing: border-box;
-}
-
-.cover h2 {
-  font-size: 30px;
-  color: #666;
-  margin: 0 0 18px;
-  font-weight: 500;
-}
-
-.cover h1 {
-  font-size: 58px;
-  margin: 0 0 36px;
-  color: #222;
-  line-height: 1.05;
-}
-
-.cover .date {
-  font-size: 28px;
-  color: #666;
-  margin-bottom: 60px;
-}
-
-.cover .swipe {
-  font-size: 24px;
-  color: #888;
-  margin-bottom: 50px;
-  animation: bounce 1.8s infinite;
-}
-
-.cover .updated {
-  font-size: 18px;
-  color: #666;
-  background: rgba(255,255,255,.8);
-  padding: 12px 24px;
-  border-radius: 999px;
-}
-
-@keyframes bounce {
-  0%,100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(10px);
-  }
-}
   </style>
 </head>
 
@@ -172,110 +167,151 @@
     <div class="loading">Loading today’s news...</div>
   </div>
 
-<script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbwYUbM8-uF1ZeZErUmLhnn86AGL6QiedFldvgrNE3YGc8tV_bXlI2P_veYeXPIQchzX7A/exec";
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwYUbM8-uF1ZeZErUmLhnn86AGL6QiedFldvgrNE3YGc8tV_bXlI2P_veYeXPIQchzX7A/exec";
 
-  const colors = [
-    "#FFE3E3",
-    "#FFEACC",
-    "#FFF7C9",
-    "#E6F8D8",
-    "#DDF3FF",
-    "#E8E2FF",
-    "#F7DDF7"
-  ];
+    const colors = [
+      "#FFE3E3",
+      "#FFEACC",
+      "#FFF7C9",
+      "#E6F8D8",
+      "#DDF3FF",
+      "#E8E2FF",
+      "#F7DDF7"
+    ];
 
-  fetch(API_URL)
-    .then(response => response.json())
-    .then(cards => renderCards(cards))
-    .catch(error => {
-      document.getElementById("cards").innerHTML =
-        `<div class="error">Could not load news. Check your Apps Script URL.</div>`;
-    });
+    fetch(API_URL)
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(cards) {
+        renderCards(cards);
+      })
+      .catch(function(error) {
+        const container = document.getElementById("cards");
+        container.innerHTML = "";
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error";
+        errorDiv.textContent = "Could not load news. Check your Apps Script URL.";
+        container.appendChild(errorDiv);
+      });
 
-  function renderCards(cards) {
-    const container = document.getElementById("cards");
+    function renderCards(cards) {
+      const container = document.getElementById("cards");
+      container.innerHTML = "";
 
-    if (!cards || !cards.length) {
-      container.innerHTML = `<div class="error">No news stories found.</div>`;
-      return;
+      if (!cards || !cards.length) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error";
+        errorDiv.textContent = "No news stories found.";
+        container.appendChild(errorDiv);
+        return;
+      }
+
+      addCover(container);
+      addNewsCards(container, cards);
+      animateCards();
     }
 
-    const today = new Date();
+    function addCover(container) {
+      const now = new Date();
 
-    const updated = today.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit"
-    });
-
-    const date = today.toLocaleDateString([], {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    });
-
-    container.innerHTML =
-      `
-      <section class="cover">
-        <h2>☀️ Good Morning</h2>
-        <h1>Daily 7 News</h1>
-        <div class="date">${date}</div>
-        <div class="swipe">
-          ↓<br>
-          Swipe to begin
-        </div>
-        <div class="updated">
-          Updated ${updated}
-        </div>
-      </section>
-      `
-      +
-      cards.map((card, index) => `
-        <section class="card" style="background:${colors[index % colors.length]}">
-          <div class="number">${index + 1} of ${cards.length}</div>
-          <div class="headline">${escapeHtml(card.headline)}</div>
-          <img class="hero" src="${escapeAttribute(card.image)}" alt="">
-          <div class="source">${escapeHtml(card.source)}</div>
-          <a href="${escapeAttribute(card.link)}" target="_blank" rel="noopener noreferrer">Read full story</a>
-        </section>
-      `).join("");
-
-    animateCards();
-  }
-
-  function animateCards() {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("active");
-        } else {
-          entry.target.classList.remove("active");
-        }
+      const updated = now.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
       });
-    }, { threshold: 0.6 });
 
-    document.querySelectorAll(".card").forEach(card => {
-      observer.observe(card);
-    });
-  }
+      const date = now.toLocaleDateString([], {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
 
-  function escapeHtml(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+      const cover = document.createElement("section");
+      cover.className = "cover";
 
-  function escapeAttribute(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("<", "%3C")
-      .replaceAll(">", "%3E");
-  }
-</script>
+      const greeting = document.createElement("h2");
+      greeting.textContent = "☀️ Good Morning";
+
+      const title = document.createElement("h1");
+      title.textContent = "Daily 7 News";
+
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "date";
+      dateDiv.textContent = date;
+
+      const swipe = document.createElement("div");
+      swipe.className = "swipe";
+      swipe.innerHTML = "↓<br>Swipe to begin";
+
+      const updatedDiv = document.createElement("div");
+      updatedDiv.className = "updated";
+      updatedDiv.textContent = "Updated " + updated;
+
+      cover.appendChild(greeting);
+      cover.appendChild(title);
+      cover.appendChild(dateDiv);
+      cover.appendChild(swipe);
+      cover.appendChild(updatedDiv);
+
+      container.appendChild(cover);
+    }
+
+    function addNewsCards(container, cards) {
+      cards.forEach(function(card, index) {
+        const section = document.createElement("section");
+        section.className = "card";
+        section.style.background = colors[index % colors.length];
+
+        const number = document.createElement("div");
+        number.className = "number";
+        number.textContent = (index + 1) + " of " + cards.length;
+
+        const headline = document.createElement("div");
+        headline.className = "headline";
+        headline.textContent = card.headline || "";
+
+        const image = document.createElement("img");
+        image.className = "hero";
+        image.src = card.image || "";
+        image.alt = "";
+
+        const source = document.createElement("div");
+        source.className = "source";
+        source.textContent = card.source || "";
+
+        const link = document.createElement("a");
+        link.href = card.link || "#";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Read full story";
+
+        section.appendChild(number);
+        section.appendChild(headline);
+        section.appendChild(image);
+        section.appendChild(source);
+        section.appendChild(link);
+
+        container.appendChild(section);
+      });
+    }
+
+    function animateCards() {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+          } else {
+            entry.target.classList.remove("active");
+          }
+        });
+      }, { threshold: 0.6 });
+
+      document.querySelectorAll(".card").forEach(function(card) {
+        observer.observe(card);
+      });
+    }
+  </script>
 </body>
 </html>
