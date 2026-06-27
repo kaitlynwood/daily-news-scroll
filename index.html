@@ -106,6 +106,64 @@
         height: 320px;
       }
     }
+    .cover {
+  height: 100vh;
+  background: #FFF8EC;
+  scroll-snap-align: start;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+  padding: 36px;
+  box-sizing: border-box;
+}
+
+.cover h2 {
+  font-size: 30px;
+  color: #666;
+  margin: 0 0 18px;
+  font-weight: 500;
+}
+
+.cover h1 {
+  font-size: 58px;
+  margin: 0 0 36px;
+  color: #222;
+  line-height: 1.05;
+}
+
+.cover .date {
+  font-size: 28px;
+  color: #666;
+  margin-bottom: 60px;
+}
+
+.cover .swipe {
+  font-size: 24px;
+  color: #888;
+  margin-bottom: 50px;
+  animation: bounce 1.8s infinite;
+}
+
+.cover .updated {
+  font-size: 18px;
+  color: #666;
+  background: rgba(255,255,255,.8);
+  padding: 12px 24px;
+  border-radius: 999px;
+}
+
+@keyframes bounce {
+  0%,100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
   </style>
 </head>
 
@@ -143,7 +201,43 @@
         return;
       }
 
-      container.innerHTML = cards.map((card, index) => `
+      const today = new Date();
+
+const updated = today.toLocaleTimeString([], {
+  hour: "numeric",
+  minute: "2-digit"
+});
+
+const date = today.toLocaleDateString([], {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  year: "numeric"
+});
+
+container.innerHTML =
+`
+<section class="cover">
+
+<h2>☀️ Good Morning</h2>
+
+<h1>Daily 7 News</h1>
+
+<div class="date">${date}</div>
+
+<div class="swipe">
+↓<br>
+Swipe to begin
+</div>
+
+<div class="updated">
+Updated ${updated}
+</div>
+
+</section>
+`
++
+cards.map((card, index) => ``
         <section class="card" style="background:${colors[index % colors.length]}">
           <div class="number">${index + 1} of ${cards.length}</div>
           <div class="headline">${escapeHtml(card.headline)}</div>
