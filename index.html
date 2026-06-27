@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Daily News Scroll</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #111;
+      overflow: hidden;
+    }
+
+    .container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    .card {
+      height: 100vh;
+      padding: 36px;
+      box-sizing: border-box;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: .45;
+      transform: scale(.96);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .card.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .number {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 24px;
+      background: rgba(255,255,255,.55);
+      padding: 8px 18px;
+      border-radius: 999px;
+    }
+
+    .headline {
+      font-size: 34px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.12;
+      max-width: 900px;
+      margin-bottom: 28px;
+    }
+
+    .hero {
+      width: 100%;
+      max-width: 720px;
+      height: 230px;
+      object-fit: cover;
+      border-radius: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+
+    .source {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 28px;
+    }
+
+    a {
+      font-size: 14px;
+      color: #111;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(255,255,255,.65);
+      padding: 14px 24px;
+      border-radius: 999px;
+    }
+
+    .loading,
+    .error {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 32px;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-weight: bold;
+      background: #FFE3E3;
+    }
+
+    @media (min-width: 700px) {
+      .headline {
+        font-size: 46px;
+      }
+
+      .hero {
+        height: 320px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" id="cards">
+    <div class="loading">Loading today’s news...</div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwYUbM8-uF1ZeZErUmLhnn86AGL6QiedFldvgrNE3YGc8tV_bXlI2P_veYeXPIQchzX7A/exec";
+
+    const colors = [
+      "#FFE3E3",
+      "#FFEACC",
+      "#FFF7C9",
+      "#E6F8D8",
+      "#DDF3FF",
+      "#E8E2FF",
+      "#F7DDF7"
+    ];
+
+    fetch(API_URL)
+      .then(response => response.json())
+      .then(cards => renderCards(cards))
+      .catch(error => {
+        document.getElementById("cards").innerHTML =
+          `<div class="error">Could not load news. Check your Apps Script URL.</div>`;
+      });
+
+    function renderCards(cards) {
+      const container = document.getElementById("cards");
+
+      if (!cards || !cards.length) {
+        container.innerHTML = `<div class="error">No news stories found.</div>`;
+        return;
+      }
+
+      container.innerHTML = cards.map((card, index) => `
+        <section class="card" style="background:${colors[index % colors.length]}">
+          <div class="number">${index + 1} of ${cards.length}</div>
+          <div class="headline">${escapeHtml(card.headline)}</div>
+          <img class="hero" src="${escapeAttribute(card.image)}" alt="">
+          <div class="source">${escapeHtml(card.source)}</div>
+          <a href="${escapeAttribute(card.link)}" target="_blank" rel="noopener noreferrer">Read full story</a>
+        </section>
+      `).join("");
+
+      animateCards();
+    }
+
+    function animateCards() {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+          } else {
+            entry.target.classList.remove("active");
+          }
+        });
+      }, { threshold: 0.6 });
+
+      document.querySelectorAll(".card").forEach(card => {
+        observer.observe(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "%3C")
+        .replaceAll(">", "%3E");
+    }
+  </script>
+</body>
+</html>
