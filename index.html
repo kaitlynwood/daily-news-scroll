@@ -180,21 +180,22 @@
       "#F7DDF7"
     ];
 
-    fetch(API_URL)
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(cards) {
-        renderCards(cards);
-      })
-      .catch(function(error) {
-        const container = document.getElementById("cards");
-        container.innerHTML = "";
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "error";
-        errorDiv.textContent = "Could not load news. Check your Apps Script URL.";
-        container.appendChild(errorDiv);
-      });
+    window.loadNews = function(cards) {
+  renderCards(cards);
+};
+
+const script = document.createElement("script");
+script.src = API_URL + "?callback=loadNews";
+script.onerror = function() {
+  const container = document.getElementById("cards");
+  container.innerHTML = "";
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "error";
+  errorDiv.textContent = "Could not load news.";
+  container.appendChild(errorDiv);
+};
+
+document.body.appendChild(script);
 
     function renderCards(cards) {
       const container = document.getElementById("cards");
